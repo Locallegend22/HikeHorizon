@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { dbGet, dbAll, dbRun } = require('../data/database');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'hikehorizon_jwt_secret_2024';
 
 function requireAdmin(req, res, next) {
   if (!req.session.user || !req.session.user.is_admin) {
@@ -32,16 +35,17 @@ router.post('/login', (req, res) => {
     return res.render('login', { error: 'Invalid email or password', redirect: req.body.redirect || '' });
   }
 
-  req.session.user = {
+  const token = jwt.sign({
     id: user.id,
     username: user.username,
     email: user.email,
     avatar: user.avatar,
     experience_level: user.experience_level,
     is_admin: user.is_admin
-  };
+  }, JWT_SECRET, { expiresIn: '7d' });
 
   const redirect = req.body.redirect || (user.is_admin ? '/admin/dashboard' : '/');
+  res.cookie('token', token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
   res.redirect(redirect);
 });
 
@@ -58,15 +62,16 @@ router.post('/register', (req, res) => {
   try {
     const result = dbRun('INSERT INTO users (username, email, password, avatar, experience_level) VALUES (?, ?, ?, ?, ?)', [username, email, hashedPassword, '/images/default-avatar.svg', 'beginner']);
     
-    req.session.user = {
+    const token = jwt.sign({
       id: result.lastInsertRowid,
       username: username,
       email: email,
       avatar: '/images/default-avatar.svg',
       experience_level: 'beginner',
       is_admin: 0
-    };
+    }, JWT_SECRET, { expiresIn: '7d' });
 
+    res.cookie('token', token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
     res.redirect('/');
   } catch (err) {
     res.render('register', { error: 'Registration failed. Please try again.' });
@@ -74,7 +79,7 @@ router.post('/register', (req, res) => {
 });
 
 router.get('/logout', (req, res) => {
-  req.session.destroy();
+  res.clearCookie('token');
   res.redirect('/');
 });
 

@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
+const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const bcrypt = require('bcryptjs');
@@ -8,8 +8,7 @@ const { dbGet, dbAll, dbRun, initDb } = require('./data/database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-console.log('VERCEL env:', process.env.VERCEL);
+const JWT_SECRET = process.env.JWT_SECRET || 'hikehorizon_jwt_secret_2024';
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -18,19 +17,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'hikehorizon_secret_key_2024',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-    sameSite: 'lax',
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production'
-  }
-}));
 
 app.use((req, res, next) => {
+  const token = req.cookies.token;
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.session.user = decoded;
+    } catch (e) {
+      res.clearCookie('token');
+    }
+  }
   res.locals.user = req.session.user || null;
   res.locals.path = req.path;
   next();

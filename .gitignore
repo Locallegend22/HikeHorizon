@@ -6,3 +6,5 @@ node_modules/
 cookies.txt
 nul
 .DS_Store
+
+.vercel

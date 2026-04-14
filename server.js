@@ -20,7 +20,12 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'hikehorizon_secret_key_2024',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }
+  cookie: { 
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: 'lax',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production'
+  }
 }));
 
 app.use((req, res, next) => {

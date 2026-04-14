@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Trails - Admin</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+  <aside class="w-64 bg-night text-white min-h-screen">
+    <div class="p-4">
+      <div class="flex items-center space-x-2 mb-8">
+        <svg class="w-8 h-8" viewBox="0 0 40 40" fill="none"><path d="M20 2L35 12V28L20 38L5 28V12L20 2Z" fill="#F4A460"/><path d="M20 8L30 15V25L20 32L10 25V15L20 8Z" fill="#2D5A27"/><circle cx="20" cy="20" r="4" fill="#F4A460"/></svg>
+        <span class="text-xl font-bold">Admin</span>
+      </div>
+      <nav class="space-y-2">
+        <a href="/admin/dashboard" class="block py-2 px-4 rounded hover:bg-forest">Dashboard</a>
+        <a href="/admin/users" class="block py-2 px-4 rounded hover:bg-forest">Users</a>
+        <a href="/admin/trails" class="block py-2 px-4 rounded bg-forest">Trails</a>
+        <a href="/admin/hikes" class="block py-2 px-4 rounded hover:bg-forest">Hikes Log</a>
+        <hr class="my-4 border-gray-700">
+        <a href="/" class="block py-2 px-4 rounded hover:bg-forest">Back to Site</a>
+        <a href="/logout" class="block py-2 px-4 rounded hover:bg-forest text-red-400">Logout</a>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="flex-1 p-8">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">Manage Trails</h1>
+      <a href="/admin/trails/new" class="bg-forest text-white px-6 py-2 rounded-lg font-semibold hover:bg-forest-dark">Add New Trail</a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Trail</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Location</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Difficulty</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Distance</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% trails.forEach(function(trail) { %>
+            <tr class="border-t border-gray-100">
+              <td class="px-6 py-4">
+                <div class="flex items-center space-x-3">
+                  <img src="<%= trail.image_url %>" class="w-12 h-12 rounded-lg object-cover">
+                  <span class="font-semibold text-gray-800"><%= trail.name %></span>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-gray-600"><%= trail.location %></td>
+              <td class="px-6 py-4">
+                <span class="px-2 py-1 rounded text-xs font-medium
+                  <%= trail.difficulty === 'easy' ? 'bg-green-100 text-green-800' : 
+                     trail.difficulty === 'moderate' ? 'bg-yellow-100 text-yellow-800' : 
+                     'bg-red-100 text-red-800' %>">
+                  <%= trail.difficulty %>
+                </span>
+              </td>
+              <td class="px-6 py-4 text-gray-600"><%= trail.distance %> km</td>
+              <td class="px-6 py-4">
+                <a href="/admin/trails/<%= trail.id %>/edit" class="text-blue-600 hover:underline text-sm mr-3">Edit</a>
+                <form action="/admin/trails/<%= trail.id %>/delete" method="POST" class="inline" onsubmit="return confirm('Delete this trail?')">
+                  <button type="submit" class="text-red-600 hover:underline text-sm">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>

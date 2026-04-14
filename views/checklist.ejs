@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gear Checklist - Hike Horizon</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+  </style>
+</head>
+<body class="bg-sage min-h-screen flex flex-col">
+  <%- include('partials/header') %>
+
+  <main class="flex-grow">
+    <div class="bg-forest py-12">
+      <div class="max-w-7xl mx-auto px-4">
+        <h1 class="text-3xl font-bold text-white mb-2">Gear Checklist</h1>
+        <p class="text-gray-200">Generate your packing list based on your hike</p>
+      </div>
+    </div>
+
+    <div class="max-w-3xl mx-auto px-4 py-8">
+      <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Customize Your Checklist</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Difficulty</label>
+            <select id="difficulty" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+              <option value="easy">Easy</option>
+              <option value="moderate" selected>Moderate</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Duration</label>
+            <select id="duration" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+              <option value="half">Half Day</option>
+              <option value="full" selected>Full Day</option>
+              <option value="overnight">Overnight</option>
+              <option value="multi">Multi-day</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-700 font-medium mb-2">Weather</label>
+            <select id="weather" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+              <option value="clear">Clear/Sunny</option>
+              <option value="rainy">Rainy</option>
+              <option value="cold">Cold</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="generateChecklist()" class="bg-forest text-white px-6 py-2 rounded-lg font-semibold hover:bg-forest-dark transition-all">
+          Generate Checklist
+        </button>
+      </div>
+
+      <div id="checklist" class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-gray-800">Your Packing List</h2>
+          <button onclick="printChecklist()" class="text-forest font-semibold hover:underline">Print</button>
+        </div>
+        <div id="checklist-items" class="space-y-3">
+          <!-- Checklist items will be generated here -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    const checklists = {
+      easy: {
+        half: ['Water (1L)', 'Snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Comfortable shoes', 'Phone charger'],
+        full: ['Water (2L)', 'Lunch', 'Snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Comfortable shoes', 'Phone charger', 'Rain jacket'],
+        overnight: ['Water (3L)', 'Meals', 'Snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Hiking shoes', 'Phone charger', 'Rain jacket', 'Tent', 'Sleeping bag', 'Flashlight'],
+        multi: ['Water (5L)', 'Meals', 'Snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Hiking shoes', 'Power bank', 'Rain jacket', 'Tent', 'Sleeping bag', 'Flashlight', 'Stove', 'Water filter']
+      },
+      moderate: {
+        half: ['Water (1.5L)', 'Snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Hiking shoes', 'Phone charger', 'Trekking poles'],
+        full: ['Water (2.5L)', 'Lunch', 'Snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Hiking shoes', 'Phone charger', 'Rain jacket', 'Trekking poles', 'Flashlight'],
+        overnight: ['Water (4L)', 'Meals', 'Snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Hiking shoes', 'Power bank', 'Rain jacket', 'Trekking poles', 'Tent', 'Sleeping pad', 'Flashlight', 'Extra batteries'],
+        multi: ['Water (6L)', 'Meals', 'Snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Hiking shoes', 'Power bank', 'Rain jacket', 'Trekking poles', 'Tent', 'Sleeping pad', 'Flashlight', 'Stove', 'Water filter', 'Repair kit']
+      },
+      hard: {
+        half: ['Water (2L)', 'Energy snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Hiking shoes', 'Phone charger', 'Trekking poles', 'Headlamp', 'Gloves'],
+        full: ['Water (3L)', 'Lunch', 'Energy snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Hiking shoes', 'Power bank', 'Rain jacket', 'Trekking poles', 'Headlamp', 'Gloves', 'Emergency whistle'],
+        overnight: ['Water (5L)', 'Meals', 'Energy snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Hiking shoes', 'Power bank', 'Rain jacket', 'Trekking poles', 'Headlamp', 'Gloves', 'Tent', 'Sleeping pad', 'Emergency blanket'],
+        multi: ['Water (8L)', 'Meals', 'Energy snacks', 'First aid kit', 'Sunscreen', 'Hat', 'Hiking shoes', 'Power bank', 'Rain jacket', 'Trekking poles', 'Headlamp', 'Gloves', 'Tent', 'Sleeping pad', 'Stove', 'Water filter', 'Repair kit', 'Emergency satellite communicator']
+      }
+    };
+
+    const weatherAddons = {
+      rainy: ['Rain jacket', 'Waterproof bag', 'Extra socks', 'Rain cover for backpack'],
+      cold: ['Thermal wear', 'Fleece jacket', 'Warm hat', 'Gloves', 'Hand warmers']
+    };
+
+    function generateChecklist() {
+      const difficulty = document.getElementById('difficulty').value;
+      const duration = document.getElementById('duration').value;
+      const weather = document.getElementById('weather').value;
+
+      let items = [...checklists[difficulty][duration]];
+      
+      if (weather === 'rainy') {
+        items = [...items, ...weatherAddons.rainy];
+      } else if (weather === 'cold') {
+        items = [...items, ...weatherAddons.cold];
+      }
+
+      const container = document.getElementById('checklist-items');
+      container.innerHTML = items.map((item, index) => `
+        <label class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer">
+          <input type="checkbox" class="w-5 h-5 text-forest rounded mr-3">
+          <span class="text-gray-700">${item}</span>
+        </label>
+      `).join('');
+    }
+
+    function printChecklist() {
+      window.print();
+    }
+
+    generateChecklist();
+  </script>
+</body>
+</html>

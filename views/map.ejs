@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Map - Hike Horizon</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+    #map { 
+      height: calc(100vh - 180px); 
+      border-radius: 1rem; 
+      min-height: 500px;
+      z-index: 1;
+    }
+    .leaflet-container {
+      width: 100%;
+      height: 100%;
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body class="bg-sage min-h-screen flex flex-col">
+  <%- include('partials/header') %>
+
+  <main class="flex-grow">
+    <div class="bg-forest py-8">
+      <div class="max-w-7xl mx-auto px-4">
+        <h1 class="text-3xl font-bold text-white mb-2">Trail Map</h1>
+        <p class="text-gray-200">Explore trails across the Philippines</p>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-6">
+      <div class="bg-white rounded-xl shadow-lg p-4 mb-4">
+        <div class="flex flex-wrap gap-4 items-center">
+          <select id="filter-location" class="px-4 py-2 border border-gray-300 rounded-lg">
+            <option value="">All Locations</option>
+            <option value="Batangas">Batangas</option>
+            <option value="Cavite">Cavite</option>
+            <option value="Bataan">Bataan</option>
+            <option value="Davao">Davao</option>
+            <option value="Benguet">Benguet</option>
+          </select>
+          <select id="filter-difficulty" class="px-4 py-2 border border-gray-300 rounded-lg">
+            <option value="">All Difficulties</option>
+            <option value="easy">Easy</option>
+            <option value="moderate">Moderate</option>
+            <option value="hard">Hard</option>
+          </select>
+          <span class="text-gray-500 text-sm ml-auto" id="trail-count"><%= trails.length %> trails</span>
+        </div>
+      </div>
+
+      <div id="debug-info" class="bg-yellow-100 text-yellow-800 p-2 mb-2 text-sm"></div>
+      <div id="map" data-trails="<%- encodeURIComponent(JSON.stringify(trails)) %>"></div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const debugEl = document.getElementById('debug-info');
+      const mapEl = document.getElementById('map');
+      const trailsData = decodeURIComponent(mapEl.dataset.trails);
+      const trails = JSON.parse(trailsData);
+      
+      debugEl.textContent = 'Loading ' + trails.length + ' trails...';
+      console.log('Trails:', trails.length);
+      
+      const map = L.map('map').setView([12.5, 122], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+
+      let count = 0;
+      trails.forEach(trail => {
+        if (trail.latitude && trail.longitude) {
+          L.marker([trail.latitude, trail.longitude])
+            .addTo(map)
+            .bindPopup(`<b>${trail.name}</b><br>${trail.location}<br>${trail.distance}km`);
+          count++;
+        }
+      });
+      
+      debugEl.textContent = 'Loaded ' + count + ' trail markers';
+      console.log('Markers:', count);
+      
+      setTimeout(() => map.invalidateSize(), 200);
+    });
+  </script>
+</body>
+</html>

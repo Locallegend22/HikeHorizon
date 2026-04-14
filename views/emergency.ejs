@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emergency & Safety - Hike Horizon</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, h4, h5, h6 { font-family:Outfit', sans-serif; }
+  </style>
+</head>
+<body class="bg-sage min-h-screen flex flex-col">
+  <%- include('partials/header') %>
+
+  <main class="flex-grow">
+    <div class="bg-red-600 py-12">
+      <div class="max-w-7xl mx-auto px-4">
+        <h1 class="text-3xl font-bold text-white mb-2">Emergency & Safety</h1>
+        <p class="text-red-100">Stay safe on the trails</p>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <!-- Emergency Contacts -->
+      <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Emergency Contacts</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <% contacts.forEach(function(contact) { %>
+            <div class="p-4 border border-gray-200 rounded-lg hover:border-red-300 transition-colors">
+              <div class="flex items-center justify-between mb-2">
+                <span class="px-2 py-1 text-xs font-medium rounded
+                  <%= contact.type === 'emergency' ? 'bg-red-100 text-red-800' : 
+                     contact.type === 'hospital' ? 'bg-blue-100 text-blue-800' : 
+                     contact.type === 'ranger' ? 'bg-green-100 text-green-800' : 
+                     'bg-gray-100 text-gray-800' %>">
+                  <%= contact.type.toUpperCase() %>
+                </span>
+              </div>
+              <h3 class="font-semibold text-gray-800"><%= contact.name %></h3>
+              <p class="text-forest font-bold text-lg"><%= contact.phone %></p>
+              <% if (contact.location) { %>
+                <p class="text-sm text-gray-500"><%= contact.location %></p>
+              <% } %>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+
+      <!-- Check-in Feature -->
+      <% if (user) { %>
+      <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Safety Check-in</h2>
+        <p class="text-gray-600 mb-4">Let your emergency contacts know you're safe after your hike.</p>
+        <div class="flex flex-wrap gap-4">
+          <button onclick="checkIn('safe')" class="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-all flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            I'm Safe
+          </button>
+          <button onclick="checkIn('emergency')" class="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-all flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            Need Help
+          </button>
+        </div>
+        <div id="checkin-status" class="mt-4 hidden"></div>
+      </div>
+      <% } else { %>
+      <div class="bg-white rounded-xl shadow-lg p-6 mb-8 text-center">
+        <p class="text-gray-600">Please <a href="/login" class="text-forest font-semibold">login</a> to use the check-in feature.</p>
+      </div>
+      <% } %>
+
+      <!-- Safety Tips -->
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Essential Safety Tips</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-semibold text-forest mb-3">Before Your Hike</h3>
+            <ul class="space-y-2 text-gray-600">
+              <li class="flex items-start"><span class="text-sunset mr-2">✓</span> Check weather forecast</li>
+              <li class="flex items-start"><span class="text-sunset mr-2">✓</span> Tell someone your plans</li>
+              <li class="flex items-start"><span class="text-sunset mr-2">✓</span> Bring sufficient water (2L minimum)</li>
+              <li class="flex items-start"><span class="text-sunset mr-2">✓</span> Pack a first aid kit</li>
+              <li class="flex items-start"><span class="text-sunset mr-2">✓</span> Charge your phone</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="font-semibold text-forest mb-3">During Your Hike</h3>
+            <ul class="space-y-2 text-gray-600">
+              <li class="flex items-start"><span class="text-sunset mr-2">✓</span> Stay on marked trails</li>
+              <li class="flex items-start"><span class="text-sunset mr-2">✓</span> Take breaks regularly</li>
+              <li class="flex items-start"><span class="text-sunset mr-2">✓</span> Stay hydrated</li>
+              <li class="flex items-start"><span class="text-sunset mr-2">✓</span> Watch your step</li>
+              <li class="flex items-start"><span class="text-sunset mr-2">✓</span> Turn back if weather worsens</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script>
+    function checkIn(status) {
+      const statusEl = document.getElementById('checkin-status');
+      statusEl.classList.remove('hidden');
+      if (status === 'safe') {
+        statusEl.innerHTML = '<div class="bg-green-100 text-green-800 px-4 py-3 rounded-lg">✓ Check-in recorded! Stay safe out there!</div>';
+      } else {
+        statusEl.innerHTML = '<div class="bg-red-100 text-red-800 px-4 py-3 rounded-lg">⚠ Emergency alert recorded. Help is on the way!</div>';
+      }
+    }
+  </script>
+</body>
+</html>

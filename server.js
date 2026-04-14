@@ -19,16 +19,20 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
+  req.session = {};
   const token = req.cookies.token;
   if (token) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       req.session.user = decoded;
+      res.locals.user = decoded;
     } catch (e) {
       res.clearCookie('token');
+      res.locals.user = null;
     }
+  } else {
+    res.locals.user = null;
   }
-  res.locals.user = req.session.user || null;
   res.locals.path = req.path;
   next();
 });

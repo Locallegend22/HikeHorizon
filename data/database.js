@@ -181,9 +181,14 @@ function initDb() {
     dbRun('INSERT INTO achievements (name, description, icon, requirement, type) VALUES (?, ?, ?, ?, ?)', ['Mountain Master', 'Complete 25 hikes', '🏔️', 25, 'hikes']);
   }
 
-  // Create default admin user
+  // Create default admin user (always create for serverless to ensure it exists)
+  const isOnVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
   const adminCheck = dbGet('SELECT id FROM users WHERE is_admin = 1');
-  if (!adminCheck) {
+  if (!adminCheck || isOnVercel) {
+    // Delete existing admin to reset password, or create new
+    if (adminCheck) {
+      dbRun('DELETE FROM users WHERE is_admin = 1');
+    }
     const hashedPassword = bcrypt.hashSync('admin123', 10);
     dbRun('INSERT INTO users (username, email, password, is_admin) VALUES (?, ?, ?, ?)', ['admin', 'admin@hikehorizon.com', hashedPassword, 1]);
   }

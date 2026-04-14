@@ -9,6 +9,8 @@ const { dbGet, dbAll, dbRun, initDb } = require('./data/database');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+console.log('VERCEL env:', process.env.VERCEL);
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 

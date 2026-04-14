@@ -41,6 +41,12 @@ router.get('/trails', requireAdmin, (req, res) => {
   res.render('admin-trails', { trails });
 });
 
+router.get('/trails/:id', requireAdmin, (req, res) => {
+  const trail = dbGet('SELECT * FROM trails WHERE id = ?', [req.params.id]);
+  if (!trail) return res.redirect('/admin/trails');
+  res.render('admin-trail-detail', { trail });
+});
+
 router.get('/trails/new', requireAdmin, (req, res) => {
   res.render('admin-trail-form', { trail: null });
 });

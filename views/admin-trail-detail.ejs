@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=&#8203;{width}, initial-scale=1.0">
+  <title>Trail: <%= trail.name %> - Admin</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+  <aside class="w-64 bg-night text-white min-h-screen">
+    <div class="p-4">
+      <div class="flex items-center space-x-2 mb-8">
+        <svg class="w-8 h-8" viewBox="0 0 40 40" fill="none"><path d="M20 2L35 12V28L20 38L5 28V12L20 2Z" fill="#F4A460"/><path d="M20 8L30 15V25L20 32L10 25V15L20 8Z" fill="#2D5A27"/><circle cx="20" cy="20" r="4" fill="#F4A460"/></svg>
+        <span class="text-xl font-bold">Admin</span>
+      </div>
+      <nav class="space-y-2">
+        <a href="/admin/dashboard" class="block py-2 px-4 rounded hover:bg-forest">Dashboard</a>
+        <a href="/admin/users" class="block py-2 px-4 rounded hover:bg-forest">Users</a>
+        <a href="/admin/trails" class="block py-2 px-4 rounded bg-forest">Trails</a>
+        <a href="/admin/hikes" class="block py-2 px-4 rounded hover:bg-forest">Hikes Log</a>
+        <hr class="my-4 border-gray-700">
+        <a href="/" class="block py-2 px-4 rounded hover:bg-forest">Back to Site</a>
+        <a href="/logout" class="block py-2 px-4 rounded hover:bg-forest text-red-400">Logout</a>
+      </nav>
+    </div>
+  </aside>
+
+  <main class="flex-1 p-8">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold text-gray-800"><%= trail.name %></h1>
+      <div class="space-x-4">
+        <a href="/admin/trails/<%= trail.id %>/edit" class="bg-forest text-white px-4 py-2 rounded-lg hover:bg-forest-dark">Edit</a>
+        <a href="/admin/trails" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Back to Trails</a>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold text-forest mb-4">Basic Info</h3>
+          <div class="space-y-3">
+            <p><span class="font-medium">Location:</span> <%= trail.location %></p>
+            <p><span class="font-medium">Difficulty:</span> <span class="px-2 py-1 rounded text-sm <%= trail.difficulty === 'easy' ? 'bg-green-100 text-green-800' : trail.difficulty === 'moderate' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800' %>"><%= trail.difficulty %></span></p>
+            <p><span class="font-medium">Distance:</span> <%= trail.distance %> km</p>
+            <p><span class="font-medium">Elevation Gain:</span> <%= trail.elevation_gain %> m</p>
+            <p><span class="font-medium">Estimated Time:</span> <%= trail.estimated_time %></p>
+            <p><span class="font-medium">Entry Fee:</span> <%= trail.entry_fee > 0 ? '₱' + trail.entry_fee : 'Free' %></p>
+            <p><span class="font-medium">Best Season:</span> <%= trail.best_season || 'N/A' %></p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-semibold text-forest mb-4">Description</h3>
+          <p class="text-gray-700"><%= trail.description || 'No description' %></p>
+
+          <% if (trail.tips) { %>
+          <h3 class="text-lg font-semibold text-forest mt-6 mb-4">Tips</h3>
+          <p class="text-gray-700"><%= trail.tips %></p>
+          <% } %>
+
+          <% if (trail.permits_required) { %>
+          <h3 class="text-lg font-semibold text-forest mt-6 mb-4">Permits Required</h3>
+          <p class="text-gray-700"><%= trail.permits_required %></p>
+          <% } %>
+        </div>
+      </div>
+
+      <% if (trail.latitude && trail.longitude) { %>
+      <div class="mt-8">
+        <h3 class="text-lg font-semibold text-forest mb-4">Coordinates</h3>
+        <p class="text-gray-700">Lat: <%= trail.latitude %>, Lon: <%= trail.longitude %></p>
+      </div>
+      <% } %>
+
+      <div class="mt-8 border-t pt-8">
+        <form action="/admin/trails/<%= trail.id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this trail?')">
+          <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Delete Trail</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

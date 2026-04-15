@@ -25,7 +25,7 @@
     </div>
 
     <div class="max-w-3xl mx-auto px-4 py-8">
-      <div class="bg-white rounded-xl shadow-lg p-6">
+      <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
         <h2 class="text-xl font-bold text-gray-800 mb-4">Create New Trip</h2>
         <form id="trip-form">
           <div class="mb-4">
@@ -58,12 +58,50 @@
           </button>
         </form>
       </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">My Trips</h2>
+        <div id="trips-list" class="space-y-4">
+          <p class="text-gray-500 text-center py-4">Loading trips...</p>
+        </div>
+      </div>
     </div>
   </main>
 
   <%- include('partials/footer') %>
 
   <script>
+    async function loadTrips() {
+      try {
+        const response = await fetch('/api/user/trips');
+        const trips = await response.json();
+        const container = document.getElementById('trips-list');
+        
+        if (trips.length === 0) {
+          container.innerHTML = '<p class="text-gray-500 text-center py-4">No trips yet. Create your first trip above!</p>';
+          return;
+        }
+        
+        container.innerHTML = trips.map(trip => `
+          <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="font-semibold text-gray-800">${trip.title}</h3>
+                <p class="text-sm text-gray-500">${trip.trail_name} - ${trip.location}</p>
+                <p class="text-sm text-gray-400 mt-1">📅 ${new Date(trip.trip_date).toLocaleDateString()}</p>
+                ${trip.notes ? `<p class="text-sm text-gray-600 mt-2">${trip.notes}</p>` : ''}
+              </div>
+              <span class="px-2 py-1 text-xs rounded ${trip.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${trip.status}</span>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        document.getElementById('trips-list').innerHTML = '<p class="text-red-500 text-center py-4">Failed to load trips</p>';
+      }
+    }
+
+    loadTrips();
+
     document.getElementById('trip-form').addEventListener('submit', async function(e) {
       e.preventDefault();
       const formData = new FormData(this);
@@ -78,6 +116,7 @@
         if (result.success) {
           alert('Trip created successfully!');
           this.reset();
+          loadTrips();
         } else {
           alert(result.error || 'Failed to create trip');
         }

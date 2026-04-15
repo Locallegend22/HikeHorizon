@@ -94,6 +94,21 @@ router.get('/user/trips', requireAuth, async (req, res) => {
   res.json(trips);
 });
 
+router.post('/trips/:id/complete', requireAuth, async (req, res) => {
+  const { trail_id, trip_date, notes } = req.body;
+  
+  try {
+    await dbRun('UPDATE trips SET status = $1 WHERE id = $2 AND user_id = $3', ['completed', req.params.id, req.session.user.id]);
+    
+    await dbRun('INSERT INTO hikes (user_id, trail_id, date, notes, completed) VALUES ($1, $2, $3, $4, 1)', [req.session.user.id, trail_id, trip_date, notes || '']);
+    await dbRun('UPDATE users SET total_hikes = total_hikes + 1 WHERE id = $1', [req.session.user.id]);
+    
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/leaderboard', async (req, res) => {
   const leaderboard = await dbAll(`
     SELECT username, total_hikes, total_distance, avatar

@@ -92,13 +92,18 @@
         container.innerHTML = trips.map(trip => `
           <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
             <div class="flex justify-between items-start">
-              <div>
+              <div class="flex-grow">
                 <h3 class="font-semibold text-gray-800">${trip.title}</h3>
                 <p class="text-sm text-gray-500">${trip.trail_name} - ${trip.location}</p>
                 <p class="text-sm text-gray-400 mt-1">📅 ${new Date(trip.trip_date).toLocaleDateString()}</p>
                 ${trip.notes ? `<p class="text-sm text-gray-600 mt-2">${trip.notes}</p>` : ''}
               </div>
-              <span class="px-2 py-1 text-xs rounded ${trip.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${trip.status}</span>
+              <div class="flex flex-col items-end gap-2">
+                <span class="px-2 py-1 text-xs rounded ${trip.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${trip.status}</span>
+                ${trip.status !== 'completed' ? `
+                <button onclick="markCompleted(${trip.id}, ${trip.trail_id}, '${trip.trip_date}', '${trip.notes || ''}')" class="text-xs bg-forest text-white px-2 py-1 rounded hover:bg-forest-dark">Mark Complete</button>
+                ` : ''}
+              </div>
             </div>
           </div>
         `).join('');
@@ -108,6 +113,27 @@
     }
 
     loadTrips();
+
+    async function markCompleted(tripId, trailId, tripDate, notes) {
+      if (!confirm('Mark this trip as completed? It will be saved to your hikes.')) return;
+      
+      try {
+        const response = await fetch('/api/trips/' + tripId + '/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trail_id: trailId, trip_date: tripDate, notes: notes })
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert('Trip marked as completed and saved to My Hikes!');
+          loadTrips();
+        } else {
+          alert(result.error || 'Failed to complete trip');
+        }
+      } catch (err) {
+        alert('Error completing trip');
+      }
+    }
 
     document.getElementById('trip-form').addEventListener('submit', async function(e) {
       e.preventDefault();

@@ -67,10 +67,15 @@ router.get('/emergency/contacts', async (req, res) => {
 });
 
 router.post('/trips', requireAuth, async (req, res) => {
-  const { trail_id, title, trip_date, itinerary, notes } = req.body;
+  const { trail_id, title, trip_date, itinerary, notes, status } = req.body;
   
   try {
-    const result = await dbRun('INSERT INTO trips (user_id, trail_id, title, trip_date, itinerary, notes) VALUES ($1, $2, $3, $4, $5, $6)', [req.session.user.id, trail_id, title, trip_date, itinerary || '', notes || '']);
+    const result = await dbRun('INSERT INTO trips (user_id, trail_id, title, trip_date, itinerary, notes, status) VALUES ($1, $2, $3, $4, $5, $6, $7)', [req.session.user.id, trail_id, title, trip_date, itinerary || '', notes || '', status || 'planned']);
+    
+    if (status === 'completed') {
+      await dbRun('INSERT INTO hikes (user_id, trail_id, date, notes, completed) VALUES ($1, $2, $3, $4, 1)', [req.session.user.id, trail_id, trip_date, notes || '']);
+      await dbRun('UPDATE users SET total_hikes = total_hikes + 1 WHERE id = $1', [req.session.user.id]);
+    }
     
     res.json({ success: true, tripId: result.lastInsertRowid });
   } catch (err) {

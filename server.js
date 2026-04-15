@@ -52,8 +52,8 @@ app.use('/trails', trailRoutes);
 app.use('/user', userRoutes);
 app.use('/api', apiRoutes);
 
-app.get('/', (req, res) => {
-  const featuredTrails = dbAll(`
+app.get('/', async (req, res) => {
+  const featuredTrails = await dbAll(`
     SELECT t.*, AVG(r.rating) as avg_rating, COUNT(r.id) as review_count
     FROM trails t
     LEFT JOIN reviews r ON t.id = r.trail_id
@@ -62,20 +62,20 @@ app.get('/', (req, res) => {
     LIMIT 6
   `);
   const stats = {
-    totalTrails: dbGet('SELECT COUNT(*) as count FROM trails')?.count || 0,
-    totalUsers: dbGet('SELECT COUNT(*) as count FROM users')?.count || 0,
-    totalHikes: dbGet('SELECT COUNT(*) as count FROM hikes')?.count || 0
+    totalTrails: (await dbGet('SELECT COUNT(*) as count FROM trails'))?.count || 0,
+    totalUsers: (await dbGet('SELECT COUNT(*) as count FROM users'))?.count || 0,
+    totalHikes: (await dbGet('SELECT COUNT(*) as count FROM hikes'))?.count || 0
   };
   res.render('home', { featuredTrails, stats });
 });
 
-app.get('/map', (req, res) => {
-  const trails = dbAll('SELECT * FROM trails');
+app.get('/map', async (req, res) => {
+  const trails = await dbAll('SELECT * FROM trails');
   res.render('map', { trails });
 });
 
-app.get('/community', (req, res) => {
-  const recentHikes = dbAll(`
+app.get('/community', async (req, res) => {
+  const recentHikes = await dbAll(`
     SELECT h.*, t.name as trail_name, u.username
     FROM hikes h
     JOIN trails t ON h.trail_id = t.id
@@ -86,8 +86,8 @@ app.get('/community', (req, res) => {
   res.render('community', { recentHikes });
 });
 
-app.get('/emergency', (req, res) => {
-  const contacts = dbAll('SELECT * FROM emergency_contacts');
+app.get('/emergency', async (req, res) => {
+  const contacts = await dbAll('SELECT * FROM emergency_contacts');
   res.render('emergency', { contacts });
 });
 
@@ -95,11 +95,11 @@ app.get('/checklist', (req, res) => {
   res.render('checklist');
 });
 
-app.get('/plan', (req, res) => {
+app.get('/plan', async (req, res) => {
   if (!req.session.user) {
     return res.redirect('/login?redirect=/plan');
   }
-  const trails = dbAll('SELECT * FROM trails ORDER BY name');
+  const trails = await dbAll('SELECT * FROM trails ORDER BY name');
   res.render('plan', { trails });
 });
 
@@ -112,10 +112,10 @@ app.use((err, req, res, next) => {
   res.status(500).render('error', { error: err });
 });
 
-initDb();
-
-app.listen(PORT, () => {
-  console.log(`Hike Horizon server running on http://localhost:${PORT}`);
+initDb().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Hike Horizon server running on http://localhost:${PORT}`);
+  });
 });
 
 module.exports = app;

@@ -27,9 +27,9 @@ router.get('/register', (req, res) => {
   res.render('register', { error: null });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  const user = dbGet('SELECT * FROM users WHERE email = ?', [email]);
+  const user = await dbGet('SELECT * FROM users WHERE email = $1', [email]);
 
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.render('login', { error: 'Invalid email or password', redirect: req.body.redirect || '' });
@@ -49,10 +49,10 @@ router.post('/login', (req, res) => {
   res.redirect(redirect);
 });
 
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
 
-  const existingUser = dbGet('SELECT id FROM users WHERE email = ? OR username = ?', [email, username]);
+  const existingUser = await dbGet('SELECT id FROM users WHERE email = $1 OR username = $2', [email, username]);
   if (existingUser) {
     return res.render('register', { error: 'Email or username already exists' });
   }
@@ -60,7 +60,7 @@ router.post('/register', (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
   
   try {
-    const result = dbRun('INSERT INTO users (username, email, password, avatar, experience_level) VALUES (?, ?, ?, ?, ?)', [username, email, hashedPassword, '/images/default-avatar.svg', 'beginner']);
+    const result = await dbRun('INSERT INTO users (username, email, password, avatar, experience_level) VALUES ($1, $2, $3, $4, $5)', [username, email, hashedPassword, '/images/default-avatar.svg', 'beginner']);
     
     const token = jwt.sign({
       id: result.lastInsertRowid,

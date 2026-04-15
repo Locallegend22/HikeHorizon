@@ -9,31 +9,31 @@ function requireAuth(req, res, next) {
   next();
 }
 
-router.get('/trails', (req, res) => {
-  const trails = dbAll('SELECT * FROM trails ORDER BY name');
+router.get('/trails', async (req, res) => {
+  const trails = await dbAll('SELECT * FROM trails ORDER BY name');
   res.json(trails);
 });
 
-router.get('/trails/:id', (req, res) => {
-  const trail = dbGet('SELECT * FROM trails WHERE id = ?', [req.params.id]);
+router.get('/trails/:id', async (req, res) => {
+  const trail = await dbGet('SELECT * FROM trails WHERE id = $1', [req.params.id]);
   if (!trail) {
     return res.status(404).json({ error: 'Trail not found' });
   }
   res.json(trail);
 });
 
-router.get('/trails/:id/reviews', (req, res) => {
-  const reviews = dbAll(`
+router.get('/trails/:id/reviews', async (req, res) => {
+  const reviews = await dbAll(`
     SELECT r.*, u.username, u.avatar
     FROM reviews r
     JOIN users u ON r.user_id = u.id
-    WHERE r.trail_id = ?
+    WHERE r.trail_id = $1
     ORDER BY r.created_at DESC
   `, [req.params.id]);
   res.json(reviews);
 });
 
-router.post('/trails/:id/reviews', requireAuth, (req, res) => {
+router.post('/trails/:id/reviews', requireAuth, async (req, res) => {
   const { rating, comment, tips } = req.body;
   
   if (!rating || rating < 1 || rating > 5) {
@@ -41,7 +41,7 @@ router.post('/trails/:id/reviews', requireAuth, (req, res) => {
   }
 
   try {
-    dbRun('INSERT INTO reviews (user_id, trail_id, rating, comment, tips) VALUES (?, ?, ?, ?, ?)', [req.session.user.id, req.params.id, rating, comment || '', tips || '']);
+    await dbRun('INSERT INTO reviews (user_id, trail_id, rating, comment, tips) VALUES ($1, $2, $3, $4, $5)', [req.session.user.id, req.params.id, rating, comment || '', tips || '']);
     
     res.json({ success: true, message: 'Review added successfully' });
   } catch (err) {
@@ -61,16 +61,16 @@ router.get('/weather/:lat/:lon', async (req, res) => {
   }
 });
 
-router.get('/emergency/contacts', (req, res) => {
-  const contacts = dbAll('SELECT * FROM emergency_contacts');
+router.get('/emergency/contacts', async (req, res) => {
+  const contacts = await dbAll('SELECT * FROM emergency_contacts');
   res.json(contacts);
 });
 
-router.post('/trips', requireAuth, (req, res) => {
+router.post('/trips', requireAuth, async (req, res) => {
   const { trail_id, title, trip_date, itinerary, notes } = req.body;
   
   try {
-    const result = dbRun('INSERT INTO trips (user_id, trail_id, title, trip_date, itinerary, notes) VALUES (?, ?, ?, ?, ?, ?)', [req.session.user.id, trail_id, title, trip_date, itinerary || '', notes || '']);
+    const result = await dbRun('INSERT INTO trips (user_id, trail_id, title, trip_date, itinerary, notes) VALUES ($1, $2, $3, $4, $5, $6)', [req.session.user.id, trail_id, title, trip_date, itinerary || '', notes || '']);
     
     res.json({ success: true, tripId: result.lastInsertRowid });
   } catch (err) {
@@ -78,19 +78,19 @@ router.post('/trips', requireAuth, (req, res) => {
   }
 });
 
-router.get('/user/trips', requireAuth, (req, res) => {
-  const trips = dbAll(`
+router.get('/user/trips', requireAuth, async (req, res) => {
+  const trips = await dbAll(`
     SELECT tr.*, t.name as trail_name, t.location
     FROM trips tr
     JOIN trails t ON tr.trail_id = t.id
-    WHERE tr.user_id = ?
+    WHERE tr.user_id = $1
     ORDER BY tr.trip_date ASC
   `, [req.session.user.id]);
   res.json(trips);
 });
 
-router.get('/leaderboard', (req, res) => {
-  const leaderboard = dbAll(`
+router.get('/leaderboard', async (req, res) => {
+  const leaderboard = await dbAll(`
     SELECT username, total_hikes, total_distance, avatar
     FROM users
     ORDER BY total_hikes DESC
